@@ -42,11 +42,11 @@
     {
       "name": "default",
       "rdbms": "mysql",
-      "host": "127.0.0.1",
+      "host": "47.109.18.81",
       "port": 3306,
-      "dbname": "drogon_scaffold",
+      "dbname": "drogon",
       "user": "root",
-      "passwd": "",
+      "passwd": "Liu11022011..",
       "is_fast": false,
       "connection_number": 10,
       "timeout": 30,
@@ -56,9 +56,9 @@
   "redis_clients": [
     {
       "name": "default",
-      "host": "127.0.0.1",
+      "host": "47.109.18.81",
       "port": 6379,
-      "passwd": "",
+      "passwd": "Liu11022011..",
       "db": 0,
       "is_fast": false,
       "number_of_connections": 10,

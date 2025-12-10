@@ -41,7 +41,7 @@ void initJwt(const Json::Value& config) {
     middleware::JwtUtil::setExpireDuration(std::chrono::hours(expireHours));
 }
 
-// 初始化消息队列
+// 初始化消息队列（只注册处理器，不启动消费者）
 void initMessageQueue(const Json::Value& config) {
     auto consumerThreads = config.get("consumer_threads", 4).asInt();
     auto maxQueueSize = config.get("max_queue_size", 10000).asUInt();
@@ -66,8 +66,7 @@ void initMessageQueue(const Json::Value& config) {
         co_return true;
     });
 
-    // 启动消费者
-    mq.startConsumers("tasks");
+    // 注意：不在这里启动消费者，等 app().run() 之后 Redis 才可用
 }
 
 // 全局异常处理器
@@ -140,7 +139,6 @@ int main(int argc, char* argv[]) {
             initMessageQueue(customConfig["queue"]);
         } else {
             queue::MessageQueue::instance().init();
-            queue::MessageQueue::instance().startConsumers("tasks");
         }
 
     } catch (const std::exception& e) {
@@ -152,22 +150,21 @@ int main(int argc, char* argv[]) {
     setupExceptionHandler();
     setupNotFoundHandler();
 
-    // 注册启动回调
+    // 注册启动回调（此时 Redis 客户端已经初始化）
     drogon::app().registerBeginningAdvice([]() {
         spdlog::info("Server started");
-    });
 
-    // 启动服务器
-    spdlog::info("Server listening on {}:{}",
-                 drogon::app().getListeners()[0].toIp(),
-                 drogon::app().getListeners()[0].toPort());
+        // 在这里启动消费者，因为此时 Redis 已经可用
+        queue::MessageQueue::instance().startConsumers("tasks");
+        spdlog::info("Message queue consumers started");
+    });
 
     drogon::app().run();
 
-    // 服务器停止后清理资源
-    spdlog::info("Server shutting down...");
-    queue::MessageQueue::instance().shutdown();
-    spdlog::info("Server stopped");
+    // // 服务器停止后清理资源
+    // spdlog::info("Server shutting down...");
+    // queue::MessageQueue::instance().shutdown();
+    // spdlog::info("Server stopped");
 
     return 0;
 }
