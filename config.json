@@ -1,0 +1,78 @@
+{
+  "listeners": [
+    {
+      "address": "0.0.0.0",
+      "port": 8080,
+      "https": false
+    }
+  ],
+  "app": {
+    "threads_num": 4,
+    "enable_session": false,
+    "session_timeout": 0,
+    "document_root": "./",
+    "upload_path": "uploads",
+    "file_types": [],
+    "max_connections": 100000,
+    "max_connections_per_ip": 0,
+    "load_db_config": true,
+    "db_clients_num": 4,
+    "run_as_daemon": false,
+    "relaunch_on_error": false,
+    "use_sendfile": true,
+    "use_gzip": true,
+    "gzip_static": true,
+    "static_files_cache_time": 5,
+    "idle_connection_timeout": 60,
+    "enable_server_header": false,
+    "server_header_field": "",
+    "enable_date_header": true,
+    "keepalive_requests": 0,
+    "pipelining_requests": 0,
+    "log": {
+      "use_local_time": true,
+      "log_path": "./logs",
+      "logfile_base_name": "drogon",
+      "log_size_limit": 100000000,
+      "max_files": 5,
+      "log_level": "DEBUG"
+    }
+  },
+  "db_clients": [
+    {
+      "name": "default",
+      "rdbms": "mysql",
+      "host": "127.0.0.1",
+      "port": 3306,
+      "dbname": "drogon_scaffold",
+      "user": "root",
+      "passwd": "",
+      "is_fast": false,
+      "connection_number": 10,
+      "timeout": 30,
+      "auto_batch": true
+    }
+  ],
+  "redis_clients": [
+    {
+      "name": "default",
+      "host": "127.0.0.1",
+      "port": 6379,
+      "passwd": "",
+      "db": 0,
+      "is_fast": false,
+      "number_of_connections": 10,
+      "timeout": -1.0
+    }
+  ],
+  "jwt": {
+    "secret": "your-super-secret-key-change-in-production",
+    "issuer": "drogon-scaffold",
+    "expire_hours": 24
+  },
+  "queue": {
+    "consumer_threads": 4,
+    "max_queue_size": 10000,
+    "max_retries": 3
+  }
+}

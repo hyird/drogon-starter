@@ -1,0 +1,27 @@
+{
+  "name" : "drogon-starter",
+  "version-string" : "1.0.0",
+  "builtin-baseline" : "e7b524242c8a5d718a7afa26794c3c19bb8b0c71",
+  "dependencies" : [ {
+    "name" : "drogon",
+    "version>=" : "1.9.11",
+    "features": [
+      "orm",
+      "ctl",
+      "yaml",
+      "mysql",
+      "redis"
+    ]
+  },
+    {
+      "name": "hiredis",
+      "features": ["ssl"]
+    },
+    {
+      "name": "jwt-cpp",
+      "features": ["picojson"]
+    },
+    "nlohmann-json",
+    "spdlog"
+  ]
+}
