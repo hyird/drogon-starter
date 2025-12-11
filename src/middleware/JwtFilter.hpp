@@ -9,7 +9,7 @@ namespace middleware {
 
     // JWT 载荷信息
     struct JwtPayload {
-        std::string userId;
+        std::string userId;   // 存储为字符串，使用时转换
         std::string username;
         std::string role;
         int64_t exp;  // 过期时间
@@ -19,7 +19,7 @@ namespace middleware {
     // JWT 工具类
     class JwtUtil {
     public:
-        // 生成 Token
+        // 生成 Token（userId 作为字符串传入）
         static std::string generate(const std::string& userId,
                                     const std::string& username,
                                     const std::string& role = "user");

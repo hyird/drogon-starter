@@ -18,13 +18,8 @@ namespace middleware {
     // 请求上下文（用于记录耗时等）
     class RequestContext {
     public:
-        // 开始计时
         void start();
-
-        // 获取耗时（毫秒）
         [[nodiscard]] int64_t elapsedMs() const;
-
-        // 设置/获取请求 ID
         void setRequestId(const std::string& id);
         [[nodiscard]] const std::string& requestId() const;
 

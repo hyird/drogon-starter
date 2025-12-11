@@ -7,16 +7,11 @@
 
 namespace utils {
 
-    // Redis 封装（基于 Drogon 自带的 Redis 客户端）
     class Redis {
     public:
-        // 单例获取
         static Redis& instance();
 
-        // 获取 Drogon Redis 客户端
         drogon::nosql::RedisClientPtr client();
-
-        // ============ 协程方法 ============
 
         // 基础操作
         drogon::Task<bool> set(const std::string& key, const std::string& value);
@@ -33,7 +28,7 @@ namespace utils {
         drogon::Task<std::string> hget(const std::string& key, const std::string& field);
         drogon::Task<bool> hdel(const std::string& key, const std::string& field);
 
-        // List 操作（用于消息队列）
+        // List 操作
         drogon::Task<int64_t> lpush(const std::string& key, const std::string& value);
         drogon::Task<std::string> rpop(const std::string& key);
         drogon::Task<std::string> brpop(const std::string& key, std::chrono::seconds timeout);

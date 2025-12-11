@@ -1,14 +1,13 @@
 #pragma once
 
 #include <string>
-#include <optional>
 #include <drogon/drogon.h>
 
 namespace services {
 
     // 登录结果
     struct LoginResult {
-        std::string userId;
+        int64_t userId;
         std::string username;
         std::string token;
         int64_t expiresAt;
@@ -16,7 +15,7 @@ namespace services {
 
     // 注册结果
     struct RegisterResult {
-        std::string userId;
+        int64_t userId;
         std::string username;
     };
 
@@ -36,16 +35,16 @@ namespace services {
                                          const std::string& password);
 
         // 登出（使 Token 失效）
-        drogon::Task<bool> logout(const std::string& userId, const std::string& token);
+        drogon::Task<bool> logout(int64_t userId, const std::string& token);
 
         // 刷新 Token
-        drogon::Task<LoginResult> refreshToken(const std::string& userId);
+        drogon::Task<LoginResult> refreshToken(int64_t userId);
 
         // 验证 Token 是否在黑名单
         drogon::Task<bool> isTokenBlacklisted(const std::string& token);
 
         // 修改密码
-        drogon::Task<bool> changePassword(const std::string& userId,
+        drogon::Task<bool> changePassword(int64_t userId,
                                            const std::string& oldPassword,
                                            const std::string& newPassword);
 

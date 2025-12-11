@@ -5,8 +5,6 @@
 
 namespace middleware {
 
-    // ==================== RequestContext ====================
-
     void RequestContext::start() {
         startTime_ = std::chrono::steady_clock::now();
     }
@@ -25,8 +23,6 @@ namespace middleware {
     const std::string& RequestContext::requestId() const {
         return requestId_;
     }
-
-    // ==================== LogFilter ====================
 
     void LogFilter::doFilter(const drogon::HttpRequestPtr& req,
                              drogon::FilterCallback&& fcb,
@@ -64,7 +60,6 @@ namespace middleware {
             }
         }
 
-        // 继续处理，并在响应时记录
         fccb();
     }
 

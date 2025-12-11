@@ -25,7 +25,7 @@ drogon::Task<> AuthController::registerUser(drogon::HttpRequestPtr req,
         auto result = co_await authService.registerUser(username, password, email);
 
         Json::Value data;
-        data["userId"] = result.userId;
+        data["userId"] = static_cast<Json::Int64>(result.userId);
         data["username"] = result.username;
 
         callback(core::Response::success(data));
@@ -54,10 +54,10 @@ drogon::Task<> AuthController::login(drogon::HttpRequestPtr req,
         auto result = co_await authService.login(username, password);
 
         Json::Value data;
-        data["userId"] = result.userId;
+        data["userId"] = static_cast<Json::Int64>(result.userId);
         data["username"] = result.username;
         data["token"] = result.token;
-        data["expiresAt"] = result.expiresAt;
+        data["expiresAt"] = static_cast<Json::Int64>(result.expiresAt);
 
         callback(core::Response::success(data));
 
@@ -72,18 +72,18 @@ drogon::Task<> AuthController::login(drogon::HttpRequestPtr req,
 drogon::Task<> AuthController::logout(drogon::HttpRequestPtr req,
                                        std::function<void(const drogon::HttpResponsePtr&)> callback) {
     try {
-        auto userId = req->getAttributes()->get<std::string>("userId");
+        auto userIdStr = req->getAttributes()->get<std::string>("userId");
+        int64_t userId = std::stoll(userIdStr);
         auto token = middleware::JwtUtil::extractToken(req).value_or("");
 
         // 用户锁：串行处理
-        auto lockValue = co_await lock::UserLock::instance().lock(userId);
+        auto lockValue = co_await lock::UserLock::instance().lock(userIdStr);
         if (lockValue.empty()) {
             callback(core::Response::error(core::ErrorCode::RATE_LIMIT_EXCEEDED));
             co_return;
         }
 
-        // 确保锁释放
-        auto guard = lock::UserLockGuard(userId, lockValue);
+        auto guard = lock::UserLockGuard(userIdStr, lockValue);
 
         auto& authService = services::AuthService::instance();
         co_await authService.logout(userId, token);
@@ -102,25 +102,26 @@ drogon::Task<> AuthController::logout(drogon::HttpRequestPtr req,
 drogon::Task<> AuthController::refresh(drogon::HttpRequestPtr req,
                                         std::function<void(const drogon::HttpResponsePtr&)> callback) {
     try {
-        auto userId = req->getAttributes()->get<std::string>("userId");
+        auto userIdStr = req->getAttributes()->get<std::string>("userId");
+        int64_t userId = std::stoll(userIdStr);
 
         // 用户锁：串行处理
-        auto lockValue = co_await lock::UserLock::instance().lock(userId);
+        auto lockValue = co_await lock::UserLock::instance().lock(userIdStr);
         if (lockValue.empty()) {
             callback(core::Response::error(core::ErrorCode::RATE_LIMIT_EXCEEDED));
             co_return;
         }
 
-        auto guard = lock::UserLockGuard(userId, lockValue);
+        auto guard = lock::UserLockGuard(userIdStr, lockValue);
 
         auto& authService = services::AuthService::instance();
         auto result = co_await authService.refreshToken(userId);
 
         Json::Value data;
-        data["userId"] = result.userId;
+        data["userId"] = static_cast<Json::Int64>(result.userId);
         data["username"] = result.username;
         data["token"] = result.token;
-        data["expiresAt"] = result.expiresAt;
+        data["expiresAt"] = static_cast<Json::Int64>(result.expiresAt);
 
         co_await guard.release();
         callback(core::Response::success(data));
@@ -136,7 +137,8 @@ drogon::Task<> AuthController::refresh(drogon::HttpRequestPtr req,
 drogon::Task<> AuthController::changePassword(drogon::HttpRequestPtr req,
                                                std::function<void(const drogon::HttpResponsePtr&)> callback) {
     try {
-        auto userId = req->getAttributes()->get<std::string>("userId");
+        auto userIdStr = req->getAttributes()->get<std::string>("userId");
+        int64_t userId = std::stoll(userIdStr);
 
         auto json = req->getJsonObject();
         if (!json) {
@@ -148,13 +150,13 @@ drogon::Task<> AuthController::changePassword(drogon::HttpRequestPtr req,
         auto newPassword = (*json)["newPassword"].asString();
 
         // 用户锁：串行处理
-        auto lockValue = co_await lock::UserLock::instance().lock(userId);
+        auto lockValue = co_await lock::UserLock::instance().lock(userIdStr);
         if (lockValue.empty()) {
             callback(core::Response::error(core::ErrorCode::RATE_LIMIT_EXCEEDED));
             co_return;
         }
 
-        auto guard = lock::UserLockGuard(userId, lockValue);
+        auto guard = lock::UserLockGuard(userIdStr, lockValue);
 
         auto& authService = services::AuthService::instance();
         co_await authService.changePassword(userId, oldPassword, newPassword);

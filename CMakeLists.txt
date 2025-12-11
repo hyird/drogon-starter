@@ -26,7 +26,11 @@ add_executable(drogon_starter src/main.cpp
         src/controllers/AuthController.hpp
         src/controllers/AuthController.cpp
         src/controllers/UserController.hpp
-        src/controllers/UserController.cpp)
+        src/controllers/UserController.cpp
+        src/models/Users.hpp
+        src/models/Users.cpp
+        src/models/UserMapper.hpp
+        src/models/UserMapper.cpp)
 
 find_package(Drogon CONFIG REQUIRED)
 find_package(jwt-cpp CONFIG REQUIRED)

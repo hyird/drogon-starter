@@ -109,7 +109,7 @@ void JwtFilter::doFilter(const drogon::HttpRequestPtr& req,
         return;
     }
 
-    // 检查过期（jwt-cpp 已验证，这里可以做额外检查）
+    // 检查过期
     auto now = std::chrono::system_clock::now().time_since_epoch().count();
     if (payload->exp < now) {
         spdlog::debug("JWT expired for user: {}", payload->userId);
@@ -117,7 +117,7 @@ void JwtFilter::doFilter(const drogon::HttpRequestPtr& req,
         return;
     }
 
-    // 将用户信息存入请求属性，供后续 Controller 使用
+    // 将用户信息存入请求属性
     req->getAttributes()->insert("userId", payload->userId);
     req->getAttributes()->insert("username", payload->username);
     req->getAttributes()->insert("role", payload->role);

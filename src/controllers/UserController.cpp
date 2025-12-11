@@ -11,12 +11,13 @@ namespace controllers {
 drogon::Task<> UserController::getCurrentUser(drogon::HttpRequestPtr req,
                                                std::function<void(const drogon::HttpResponsePtr&)> callback) {
     try {
-        auto userId = req->getAttributes()->get<std::string>("userId");
+        auto userIdStr = req->getAttributes()->get<std::string>("userId");
+        int64_t userId = std::stoll(userIdStr);
 
         auto& userService = services::UserService::instance();
         auto user = co_await userService.getUserById(userId);
 
-        callback(core::Response::success(user.toJson()));
+        callback(core::Response::success(user.toJsonForApi()));
 
     } catch (const core::AppException& e) {
         callback(core::Response::fromException(e));
@@ -43,7 +44,7 @@ drogon::Task<> UserController::listUsers(drogon::HttpRequestPtr req,
         // 构建列表 JSON
         Json::Value list(Json::arrayValue);
         for (const auto& user : result.list) {
-            list.append(user.toJson());
+            list.append(user.toJsonForApi());
         }
 
         callback(core::Response::page(list, result.total, result.page, result.pageSize));
@@ -58,12 +59,12 @@ drogon::Task<> UserController::listUsers(drogon::HttpRequestPtr req,
 
 drogon::Task<> UserController::getUserById(drogon::HttpRequestPtr req,
                                             std::function<void(const drogon::HttpResponsePtr&)> callback,
-                                            std::string id) {
+                                            int64_t id) {
     try {
         auto& userService = services::UserService::instance();
         auto user = co_await userService.getUserById(id);
 
-        callback(core::Response::success(user.toJson()));
+        callback(core::Response::success(user.toJsonForApi()));
 
     } catch (const core::AppException& e) {
         callback(core::Response::fromException(e));
@@ -75,7 +76,7 @@ drogon::Task<> UserController::getUserById(drogon::HttpRequestPtr req,
 
 drogon::Task<> UserController::updateUser(drogon::HttpRequestPtr req,
                                            std::function<void(const drogon::HttpResponsePtr&)> callback,
-                                           std::string id) {
+                                           int64_t id) {
     try {
         auto json = req->getJsonObject();
         if (!json) {
@@ -84,13 +85,14 @@ drogon::Task<> UserController::updateUser(drogon::HttpRequestPtr req,
         }
 
         // 用户锁：串行处理
-        auto lockValue = co_await lock::UserLock::instance().lock(id);
+        auto lockKey = std::to_string(id);
+        auto lockValue = co_await lock::UserLock::instance().lock(lockKey);
         if (lockValue.empty()) {
             callback(core::Response::error(core::ErrorCode::RATE_LIMIT_EXCEEDED));
             co_return;
         }
 
-        auto guard = lock::UserLockGuard(id, lockValue);
+        auto guard = lock::UserLockGuard(lockKey, lockValue);
 
         std::optional<std::string> email;
         std::optional<std::string> role;
@@ -118,7 +120,7 @@ drogon::Task<> UserController::updateUser(drogon::HttpRequestPtr req,
 
 drogon::Task<> UserController::setUserStatus(drogon::HttpRequestPtr req,
                                               std::function<void(const drogon::HttpResponsePtr&)> callback,
-                                              std::string id) {
+                                              int64_t id) {
     try {
         auto json = req->getJsonObject();
         if (!json) {
@@ -129,13 +131,14 @@ drogon::Task<> UserController::setUserStatus(drogon::HttpRequestPtr req,
         int status = (*json)["status"].asInt();
 
         // 用户锁：串行处理
-        auto lockValue = co_await lock::UserLock::instance().lock(id);
+        auto lockKey = std::to_string(id);
+        auto lockValue = co_await lock::UserLock::instance().lock(lockKey);
         if (lockValue.empty()) {
             callback(core::Response::error(core::ErrorCode::RATE_LIMIT_EXCEEDED));
             co_return;
         }
 
-        auto guard = lock::UserLockGuard(id, lockValue);
+        auto guard = lock::UserLockGuard(lockKey, lockValue);
 
         auto& userService = services::UserService::instance();
         co_await userService.setUserStatus(id, status);
@@ -153,16 +156,17 @@ drogon::Task<> UserController::setUserStatus(drogon::HttpRequestPtr req,
 
 drogon::Task<> UserController::deleteUser(drogon::HttpRequestPtr req,
                                            std::function<void(const drogon::HttpResponsePtr&)> callback,
-                                           std::string id) {
+                                           int64_t id) {
     try {
         // 用户锁：串行处理
-        auto lockValue = co_await lock::UserLock::instance().lock(id);
+        auto lockKey = std::to_string(id);
+        auto lockValue = co_await lock::UserLock::instance().lock(lockKey);
         if (lockValue.empty()) {
             callback(core::Response::error(core::ErrorCode::RATE_LIMIT_EXCEEDED));
             co_return;
         }
 
-        auto guard = lock::UserLockGuard(id, lockValue);
+        auto guard = lock::UserLockGuard(lockKey, lockValue);
 
         auto& userService = services::UserService::instance();
         co_await userService.deleteUser(id);

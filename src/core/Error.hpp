@@ -99,4 +99,4 @@ inline int toInt(ErrorCode code) {
     return static_cast<int>(code);
 }
 
-}
+} // namespace core

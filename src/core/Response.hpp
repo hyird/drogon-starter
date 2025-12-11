@@ -19,7 +19,7 @@ public:
         return build(ErrorCode::SUCCESS, data);
     }
 
-    // 成功响应（带消息）- 使用不同名称避免重载歧义
+    // 成功响应（带消息）
     static drogon::HttpResponsePtr successMsg(const std::string& message) {
         Json::Value json;
         json["code"] = toInt(ErrorCode::SUCCESS);
@@ -32,7 +32,7 @@ public:
     }
 
     // 错误响应
-    static drogon::HttpResponsePtr error(ErrorCode code, 
+    static drogon::HttpResponsePtr error(ErrorCode code,
                                          const std::string& detail = "") {
         Json::Value json;
         json["code"] = toInt(code);
@@ -50,17 +50,17 @@ public:
     }
 
     // 分页响应
-    static drogon::HttpResponsePtr page(const Json::Value& list, 
+    static drogon::HttpResponsePtr page(const Json::Value& list,
                                         int64_t total,
-                                        int page, 
+                                        int page,
                                         int pageSize) {
         Json::Value data;
         data["list"] = list;
-        data["total"] = total;
+        data["total"] = static_cast<Json::Int64>(total);
         data["page"] = page;
         data["pageSize"] = pageSize;
-        data["totalPages"] = (total + pageSize - 1) / pageSize;
-        
+        data["totalPages"] = static_cast<Json::Int64>((total + pageSize - 1) / pageSize);
+
         return success(data);
     }
 
@@ -82,22 +82,27 @@ private:
         switch (code) {
             case ErrorCode::SUCCESS:
                 return drogon::k200OK;
-            
+
             case ErrorCode::INVALID_PARAMS:
                 return drogon::k400BadRequest;
-            
+
             case ErrorCode::AUTH_FAILED:
             case ErrorCode::TOKEN_INVALID:
             case ErrorCode::TOKEN_EXPIRED:
             case ErrorCode::TOKEN_MISSING:
+            case ErrorCode::PASSWORD_INCORRECT:
                 return drogon::k401Unauthorized;
-            
+
             case ErrorCode::PERMISSION_DENIED:
+            case ErrorCode::USER_DISABLED:
                 return drogon::k403Forbidden;
-            
+
             case ErrorCode::RESOURCE_NOT_FOUND:
             case ErrorCode::USER_NOT_FOUND:
                 return drogon::k404NotFound;
+
+            case ErrorCode::USER_ALREADY_EXISTS:
+                return drogon::k409Conflict;
             
             case ErrorCode::RATE_LIMIT_EXCEEDED:
                 return drogon::k429TooManyRequests;

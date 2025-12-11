@@ -38,22 +38,22 @@ public:
     // 获取指定用户
     drogon::Task<> getUserById(drogon::HttpRequestPtr req,
                                 std::function<void(const drogon::HttpResponsePtr&)> callback,
-                                std::string id);
+                                int64_t id);
 
     // 更新用户
     drogon::Task<> updateUser(drogon::HttpRequestPtr req,
                                std::function<void(const drogon::HttpResponsePtr&)> callback,
-                               std::string id);
+                               int64_t id);
 
     // 禁用/启用用户
     drogon::Task<> setUserStatus(drogon::HttpRequestPtr req,
                                   std::function<void(const drogon::HttpResponsePtr&)> callback,
-                                  std::string id);
+                                  int64_t id);
 
     // 删除用户
     drogon::Task<> deleteUser(drogon::HttpRequestPtr req,
                                std::function<void(const drogon::HttpResponsePtr&)> callback,
-                               std::string id);
+                               int64_t id);
 };
 
 } // namespace controllers
